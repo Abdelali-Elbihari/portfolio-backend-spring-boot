@@ -1,4 +1,4 @@
-package com.abdelalielbihari.portfolio.model;
+package com.abdelalielbihari.portfolio.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,5 +18,5 @@ public class About {
 
   private String title;
   private String description;
-  private String imgUrl;
+  private String imageUrl;
 }
