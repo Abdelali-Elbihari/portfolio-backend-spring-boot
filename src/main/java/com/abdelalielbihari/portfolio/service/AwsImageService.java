@@ -1,6 +1,7 @@
 package com.abdelalielbihari.portfolio.service;
 
 
+import com.abdelalielbihari.portfolio.util.UrlCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,14 @@ public class AwsImageService implements ImageService {
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;
 
+
   @Override
   public String uploadImage(MultipartFile imageFile) {
     try {
       String fileName = generateFileName(imageFile.getOriginalFilename());
       PutObjectResponse response = uploadToS3(fileName, imageFile);
       return response.getValueForField("Location", String.class)
-          .orElse(getPresignedImageUrl(getUploadedFileUrl(fileName)));
+          .orElse(getUploadedFileUrl(fileName));
     } catch (IOException e) {
       throw new RuntimeException("Failed to upload image", e);
     }

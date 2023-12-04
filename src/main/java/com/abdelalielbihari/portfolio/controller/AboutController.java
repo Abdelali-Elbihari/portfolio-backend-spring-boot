@@ -52,7 +52,9 @@ public class AboutController {
 
   @PutMapping("/{id}")
   public ResponseEntity<AboutDto> updateAbout(
-      @PathVariable String id, @RequestParam AboutDto aboutDto, @RequestParam MultipartFile image) throws IOException {
+      @PathVariable("id") String id,
+      @ModelAttribute("aboutDto") AboutDto aboutDto,
+      @RequestParam MultipartFile image) throws IOException {
     Optional<AboutDto> about = aboutService.updateAbout(id, aboutDto, image);
     return about
         .map(value -> new ResponseEntity<>(value, HttpStatus.OK))

@@ -3,33 +3,34 @@ package com.abdelalielbihari.portfolio.util;
 import com.abdelalielbihari.portfolio.service.ImageService;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-
 import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class UrlCache {
 
-  private final ConcurrentMap<String, CachedUrl> cache = new ConcurrentHashMap<>();
+  private final Map<String, CachedUrl> cache = new HashMap<>();
   private final ImageService imageService;
 
-  public UrlCache(ImageService imageService, S3Presigner s3Presigner) {
+  public UrlCache(ImageService imageService) {
     this.imageService = imageService;
   }
 
   public String getOrGeneratePresignedUrl(String imageUrl) {
-    return cache.compute(imageUrl, (key, existingValue) -> existingValue == null || existingValue.isExpired()
-        ? generateAndCacheUrl(key)
-        : existingValue).getUrl();
+    CachedUrl existingValue = cache.get(imageUrl);
+
+    if (existingValue == null || existingValue.isExpired()) {
+      generateAndCacheUrl(imageUrl);
+    }
+
+    return cache.get(imageUrl).getUrl();
   }
 
-  private CachedUrl generateAndCacheUrl(String imageUrl) {
+  private void generateAndCacheUrl(String imageUrl) {
     String newUrl = imageService.getPresignedImageUrl(imageUrl);
     CachedUrl newCachedUrl = new CachedUrl(newUrl);
     cache.put(imageUrl, newCachedUrl);
-    return newCachedUrl;
   }
 
   private static class CachedUrl {

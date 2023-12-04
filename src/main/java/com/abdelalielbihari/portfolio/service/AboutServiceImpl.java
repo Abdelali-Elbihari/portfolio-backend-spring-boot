@@ -46,10 +46,7 @@ public class AboutServiceImpl implements AboutService {
 
   @Override
   public AboutDto addAbout(AboutDto aboutDto, MultipartFile image) throws IOException {
-    String imageUrl = urlCache.getOrGeneratePresignedUrl(imageService.uploadImage(image));
-    aboutDto.setImageUrl(imageUrl);
-    About about = aboutRepository.save(aboutMapper.toAbout(aboutDto));
-    return aboutMapper.toAboutDto(about);
+    return handleSaveWitImage(image, aboutMapper.toAbout(aboutDto));
   }
 
   @Override
@@ -60,19 +57,28 @@ public class AboutServiceImpl implements AboutService {
       About updatedAbout = newAbout.get();
       updatedAbout.setTitle(aboutDto.getTitle());
       updatedAbout.setDescription(aboutDto.getDescription());
-
-      // todo replace image instead
-      String imageUrl = urlCache.getOrGeneratePresignedUrl(imageService.uploadImage(image));
-      updatedAbout.setImageUrl(imageUrl);
-
-      aboutRepository.save(updatedAbout);
+      return Optional.of(handleSaveWitImage(image, updatedAbout));
     }
 
-    return newAbout.map(aboutMapper::toAboutDto);
+    return Optional.empty();
+  }
+
+  private AboutDto handleSaveWitImage(MultipartFile image, About updatedAbout) throws IOException {
+    // todo replace image instead
+    String imageUrl = imageService.uploadImage(image);
+    updatedAbout.setImageUrl(imageUrl);
+
+    //Save About entity with normal url
+    AboutDto newAboutDto = aboutMapper.toAboutDto(aboutRepository.save(updatedAbout));
+
+    //get Or Generate Presigned Url
+    newAboutDto.setImageUrl(urlCache.getOrGeneratePresignedUrl(newAboutDto.getImageUrl()));
+    return newAboutDto;
   }
 
   @Override
   public void deleteAbout(String id) {
-    aboutRepository.findById(id).ifPresent(value -> aboutRepository.delete(value));
+    aboutRepository.findById(id).ifPresent(aboutRepository::delete);
+    //todo delete image
   }
 }
