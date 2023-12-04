@@ -1,67 +1,78 @@
 package com.abdelalielbihari.portfolio.service;
 
-import com.abdelalielbihari.portfolio.config.AwsConfig;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import lombok.Getter;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
-
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import java.io.IOException;
-import java.net.URL;
+import java.time.Duration;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AwsImageService implements ImageService {
-    @Value("${cloud.aws.s3.bucket}")
-    public String bucketName;
 
-    private final S3Client s3Client;
+  @Value("${cloud.aws.s3.bucket}")
+  public String bucketName;
 
-    @Override
-    public String uploadImage(MultipartFile imageFile) {
-        try {
-            String fileName = generateFileName(imageFile.getOriginalFilename());
-            PutObjectResponse response = uploadToS3(fileName, imageFile);
-            return response.getValueForField("Location", String.class)
-                    .orElse(getUploadedFileUrl(fileName));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upload image", e);
-        }
+  private final S3Client s3Client;
+  private final S3Presigner s3Presigner;
+
+  @Override
+  public String uploadImage(MultipartFile imageFile) {
+    try {
+      String fileName = generateFileName(imageFile.getOriginalFilename());
+      PutObjectResponse response = uploadToS3(fileName, imageFile);
+      return response.getValueForField("Location", String.class)
+          .orElse(getPresignedImageUrl(getUploadedFileUrl(fileName)));
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to upload image", e);
     }
+  }
 
-    @Override
-    public URL getImageUrl(String imageUrl) {
-        GetUrlRequest request = GetUrlRequest.builder()
-                .bucket(bucketName)
-                .key(getKeyFromUrl(imageUrl))
-                .build();
+  @Override
+  public String getPresignedImageUrl(String imageUrl) {
+    GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+        .bucket(bucketName)
+        .key(getKeyFromUrl(imageUrl))
+        .build();
 
-        return s3Client.utilities().getUrl(request);
-    }
+    GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+        .signatureDuration(Duration.ofMinutes(120))
+        .getObjectRequest(getObjectRequest)
+        .build();
 
-    private String getKeyFromUrl(String imageUrl) {
-        return imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-    }
+    PresignedGetObjectRequest presignedGetObjectRequest = s3Presigner.presignGetObject(getObjectPresignRequest);
 
-    private String generateFileName(String originalFileName) {
-        return UUID.randomUUID() + "_" + originalFileName;
-    }
+    return presignedGetObjectRequest.url().toString();
+  }
 
-    private PutObjectResponse uploadToS3(String fileName, MultipartFile imageFile) throws IOException {
-        byte[] bytes = imageFile.getBytes();
-        return s3Client.putObject(PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .build(), RequestBody.fromBytes(bytes));
-    }
+  private String getKeyFromUrl(String imageUrl) {
+    return imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+  }
 
-    private String getUploadedFileUrl(String fileName) {
-        return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
-    }
+  private String generateFileName(String originalFileName) {
+    return UUID.randomUUID() + "_" + originalFileName;
+  }
+
+  private PutObjectResponse uploadToS3(String fileName, MultipartFile imageFile) throws IOException {
+    byte[] bytes = imageFile.getBytes();
+    return s3Client.putObject(PutObjectRequest.builder()
+        .bucket(bucketName)
+        .key(fileName)
+        .build(), RequestBody.fromBytes(bytes));
+  }
+
+  private String getUploadedFileUrl(String fileName) {
+    return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
+  }
 }

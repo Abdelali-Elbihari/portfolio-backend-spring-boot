@@ -50,18 +50,10 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!-- AWS SDK for Java -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>2.20.109</version>
-        </dependency>
-
-        <!-- Spring Cloud AWS -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-aws</artifactId>
-            <version>2.2.6.RELEASE</version>
+            <version>2.21.37</version>
         </dependency>
 
         <dependency>

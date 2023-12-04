@@ -14,8 +14,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 public class About {
 
-  @Id private String id;
-
+  @Id
+  private String id;
   private String title;
   private String description;
   private String imageUrl;
