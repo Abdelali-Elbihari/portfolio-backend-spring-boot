@@ -102,7 +102,7 @@ class AboutServiceImplTest {
 
     // Assert
     assertEquals(aboutDto, result);
-    verify(urlCache, times(1)).getOrGeneratePresignedUrl(anyString());
+    verify(urlCache, times(1)).getOrGeneratePresignedUrl(nullable(String.class));
   }
 
   @Test
@@ -117,14 +117,14 @@ class AboutServiceImplTest {
     when(imageService.uploadImage(image)).thenReturn(imageUrl);
     when(urlCache.getOrGeneratePresignedUrl(imageUrl)).thenReturn("presignedUrl");
     when(aboutRepository.findById(aboutId)).thenReturn(Optional.of(existingAbout));
+    when(aboutRepository.save(any(About.class))).thenReturn(existingAbout);
     when(aboutMapper.toAboutDto(existingAbout)).thenReturn(aboutDto);
-
     // Act
     Optional<AboutDto> result = aboutService.updateAbout(aboutId, aboutDto, image);
 
     // Assert
     assertEquals(aboutDto, result.orElseThrow());
-    verify(urlCache, times(1)).getOrGeneratePresignedUrl(anyString());
+    verify(urlCache, times(1)).getOrGeneratePresignedUrl(nullable(String.class));
   }
 
   @Test
