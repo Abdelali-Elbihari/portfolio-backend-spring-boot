@@ -1,7 +1,6 @@
 package com.abdelalielbihari.portfolio.service;
 
 
-import com.abdelalielbihari.portfolio.util.UrlCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ public class AwsImageService implements ImageService {
   public String uploadImage(MultipartFile imageFile) {
     try {
       String fileName = generateFileName(imageFile.getOriginalFilename());
-      PutObjectResponse response = uploadToS3(fileName, imageFile);
+      PutObjectResponse response = uploadToS3(fileName, imageFile.getBytes());
       return response.getValueForField("Location", String.class)
           .orElse(getUploadedFileUrl(fileName));
     } catch (IOException e) {
@@ -66,12 +65,11 @@ public class AwsImageService implements ImageService {
     return UUID.randomUUID() + "_" + originalFileName;
   }
 
-  private PutObjectResponse uploadToS3(String fileName, MultipartFile imageFile) throws IOException {
-    byte[] bytes = imageFile.getBytes();
+  private PutObjectResponse uploadToS3(String fileName, byte[] file) throws IOException {
     return s3Client.putObject(PutObjectRequest.builder()
         .bucket(bucketName)
-        .key(fileName)
-        .build(), RequestBody.fromBytes(bytes));
+        .key("images" + "/" + fileName)
+        .build(), RequestBody.fromBytes(file));
   }
 
   private String getUploadedFileUrl(String fileName) {
