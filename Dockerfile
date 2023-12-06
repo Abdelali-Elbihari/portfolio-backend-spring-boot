@@ -1,7 +1,7 @@
 # Build Stage
 FROM maven:3.8.4-openjdk-17-slim AS builder
 COPY . .
-RUN mvn clean package -DskipTests=true
+RUN mvn clean package
 
 # Final Stage
 FROM eclipse-temurin:17-jdk-alpine

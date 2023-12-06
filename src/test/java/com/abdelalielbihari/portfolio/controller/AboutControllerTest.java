@@ -11,45 +11,59 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.abdelalielbihari.portfolio.model.AboutDto;
 import com.abdelalielbihari.portfolio.service.AboutService;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-@WebMvcTest
-@ComponentScan({"com.abdelalielbihari.portfolio.service", "com.abdelalielbihari.portfolio.config"})
+@SpringBootTest
+@Testcontainers
+@TestPropertySource(locations = "classpath:application-test.properties")
 class AboutControllerTest {
 
-  @Mock
-  private AboutService aboutService;
+  @Mock private AboutService aboutService;
 
-  @InjectMocks
-  private AboutController aboutController;
+  @InjectMocks private AboutController aboutController;
 
   private MockMvc mockMvc;
+
+  @Container
+  private static final GenericContainer<?> mongoContainer =
+      new GenericContainer<>("mongo:latest").withExposedPorts(27017);
+
+  @DynamicPropertySource
+  static void setMongoProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.data.mongodb.host", mongoContainer::getHost);
+    registry.add("spring.data.mongodb.port", mongoContainer::getFirstMappedPort);
+  }
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-//    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    //    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     mockMvc = MockMvcBuilders.standaloneSetup(aboutController).build();
   }
 
-//  @Test
+  @Test
   void testGetOneAbout() throws Exception {
     // Arrange
     String aboutId = "1";
@@ -62,14 +76,15 @@ class AboutControllerTest {
     ResultActions resultActions = mockMvc.perform(get("/api/about/{id}", aboutId));
 
     // Assert
-    resultActions.andExpect(status().isOk())
+    resultActions
+        .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value(aboutId));
 
     verify(aboutService, times(1)).getOneAbout(aboutId);
   }
 
-//  @Test
+  //  @Test
   void testGetAllAbouts() throws Exception {
     // Arrange
     AboutDto aboutDto1 = AboutDto.builder().id("1").build();
@@ -81,7 +96,8 @@ class AboutControllerTest {
     ResultActions resultActions = mockMvc.perform(get("/api/about"));
 
     // Assert
-    resultActions.andExpect(status().isOk())
+    resultActions
+        .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(jsonPath("$[0].id").value("1"))
@@ -90,7 +106,7 @@ class AboutControllerTest {
     verify(aboutService, times(1)).getAllAbouts();
   }
 
-//  @Test
+  //  @Test
   void testAddAbout() throws Exception {
     // Arrange
     AboutDto aboutDto = AboutDto.builder().id("1").build();
@@ -103,21 +119,24 @@ class AboutControllerTest {
     mockMvc = MockMvcBuilders.standaloneSetup(aboutController).build();
 
     // Act
-    ResultActions resultActions = mockMvc.perform(
-        multipart("/api/about")
-            .file(image)
-            .param("aboutDto", "{ \"title\": \"New Title\", \"description\": \"New Description\" }")
-    );
+    ResultActions resultActions =
+        mockMvc.perform(
+            multipart("/api/about")
+                .file(image)
+                .param(
+                    "aboutDto",
+                    "{ \"title\": \"New Title\", \"description\": \"New Description\" }"));
 
     // Assert
-    resultActions.andExpect(status().isCreated())
+    resultActions
+        .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value("1"));
 
     verify(aboutService, times(1)).addAbout(aboutDto, image);
   }
 
-//  @Test
+  //  @Test
   void testUpdateAbout() throws Exception {
     // Arrange
     String aboutId = "1";
@@ -131,21 +150,24 @@ class AboutControllerTest {
     mockMvc = MockMvcBuilders.standaloneSetup(aboutController).build();
 
     // Act
-    ResultActions resultActions = mockMvc.perform(
-        multipart("/api/about/{id}", aboutId)
-            .file(image)
-            .param("aboutDto", "{ \"title\": \"Updated Title\", \"description\": \"Updated Description\" }")
-    );
+    ResultActions resultActions =
+        mockMvc.perform(
+            multipart("/api/about/{id}", aboutId)
+                .file(image)
+                .param(
+                    "aboutDto",
+                    "{ \"title\": \"Updated Title\", \"description\": \"Updated Description\" }"));
 
     // Assert
-    resultActions.andExpect(status().isOk())
+    resultActions
+        .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.id").value(aboutId));
 
     verify(aboutService, times(1)).updateAbout(aboutId, aboutDto, image);
   }
 
-//  @Test
+  //  @Test
   void testUpdateAboutNotFound() throws Exception {
     // Arrange
     String aboutId = "1";
@@ -156,11 +178,13 @@ class AboutControllerTest {
     when(aboutService.updateAbout(aboutId, aboutDto, image)).thenReturn(aboutOptional);
 
     // Act
-    ResultActions resultActions = mockMvc.perform(
-        multipart("/api/about/{id}", aboutId)
-            .file(image)
-            .param("aboutDto", "{ \"title\": \"Updated Title\", \"description\": \"Updated Description\" }")
-    );
+    ResultActions resultActions =
+        mockMvc.perform(
+            multipart("/api/about/{id}", aboutId)
+                .file(image)
+                .param(
+                    "aboutDto",
+                    "{ \"title\": \"Updated Title\", \"description\": \"Updated Description\" }"));
 
     // Assert
     resultActions.andExpect(status().isNotFound());
@@ -168,7 +192,7 @@ class AboutControllerTest {
     verify(aboutService, times(1)).updateAbout(aboutId, aboutDto, image);
   }
 
-//  @Test
+  //  @Test
   void testDeleteAbout() throws Exception {
     // Arrange
     String aboutId = "1";
