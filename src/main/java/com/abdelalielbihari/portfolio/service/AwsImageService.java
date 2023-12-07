@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.utils.Validate;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class AwsImageService implements ImageService {
 
   @Override
   public String uploadImage(MultipartFile imageFile) {
+    Validate.notNull(imageFile, "ImageFile cannot be null");
     try {
       String fileName = generateFileName(imageFile.getOriginalFilename());
       PutObjectResponse response = uploadToS3(fileName, imageFile.getBytes());
