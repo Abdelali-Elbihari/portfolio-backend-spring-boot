@@ -1,10 +1,14 @@
 package com.abdelalielbihari.portfolio.controller;
 
 import com.abdelalielbihari.portfolio.model.AboutDto;
+import com.abdelalielbihari.portfolio.model.AuthRequestDto;
+import com.abdelalielbihari.portfolio.model.JwtResponseDTO;
 import com.abdelalielbihari.portfolio.service.AboutService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,6 +30,7 @@ public class AboutController {
 
   private final AboutService aboutService;
 
+  @Operation(summary = "Get details of an about entry by ID")
   @GetMapping("/{id}")
   public ResponseEntity<AboutDto> getOneAbout(@PathVariable String id) {
     Optional<AboutDto> about = aboutService.getOneAbout(id);
@@ -34,11 +39,14 @@ public class AboutController {
         .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
+  @Operation(summary = "Retrieve all about entries")
   @GetMapping
   public List<AboutDto> getAllAbouts() {
     return aboutService.getAllAbouts();
   }
 
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @Operation(summary = "Create a new about entry")
   @PostMapping(consumes = {"multipart/form-data"})
   public ResponseEntity<AboutDto> addAbout(
       @ModelAttribute("aboutDto") AboutDto aboutDto,
@@ -50,7 +58,9 @@ public class AboutController {
     return new ResponseEntity<>(savedAbout, HttpStatus.CREATED);
   }
 
-  @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @Operation(summary = "Update an existing about entry")
+  @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
   public ResponseEntity<AboutDto> updateAbout(
       @PathVariable("id") String id,
       @ModelAttribute("aboutDto") AboutDto aboutDto,
@@ -61,6 +71,8 @@ public class AboutController {
         .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @Operation(summary = "Delete an about entry by ID")
   @DeleteMapping("/{id}")
   public ResponseEntity<String> deleteAbout(@PathVariable String id) {
     aboutService.deleteAbout(id);
