@@ -1,9 +1,8 @@
-# Project Name
+# Spring Boot portfolio backend API
 
-[![Build Status](https://github.comAbdelali-Elbihari/portfolio-backend-spring-boot/actions/workflows/ci.yml/badge.svg)](https://github.com/portfolio-backend-spring-boot/actions)
+[![Build Status](https://github.com/Abdelali-Elbihari/portfolio-backend-spring-boot/actions/workflows/ci.yml/badge.svg)](https://github.com/Abdelali-Elbihari/portfolio-backend-spring-boot/actions)
 
 ## Description
 
-Provide a brief description of your project.
-
+API for my Portfolio at www.abdelalielbihari.com
 
