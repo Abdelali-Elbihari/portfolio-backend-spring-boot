@@ -52,8 +52,8 @@ class AboutControllerTest {
 
   @DynamicPropertySource
   static void setMongoProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.data.mongodb.host", mongoContainer::getHost);
-    registry.add("spring.data.mongodb.port", mongoContainer::getFirstMappedPort);
+    registry.add("mongo.container.host", mongoContainer::getHost);
+    registry.add("mongo.container.port", mongoContainer::getFirstMappedPort);
   }
 
   @BeforeEach
