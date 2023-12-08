@@ -1,13 +1,15 @@
-package com.abdelalielbihari.portfolio.security;
+package com.abdelalielbihari.portfolio.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Date;
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 @Component
 public class JwtTokenUtil {
@@ -23,8 +25,12 @@ public class JwtTokenUtil {
         .setSubject(username)
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-        .signWith(SignatureAlgorithm.HS256, secretKey)
+        .signWith(getKey())
         .compact();
+  }
+
+  private SecretKey getKey() {
+    return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
   }
 
   public String extractToken(HttpServletRequest request) {
@@ -39,7 +45,7 @@ public class JwtTokenUtil {
 
   public boolean validateToken(String token) {
     try {
-      Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+      getParsedClaimsJws(token);
       return true;
     } catch (Exception e) {
       return false;
@@ -47,7 +53,10 @@ public class JwtTokenUtil {
   }
 
   public String getUsernameFromToken(String token) {
-    Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-    return claims.getSubject();
+    return getParsedClaimsJws(token).getBody().getSubject();
+  }
+
+  private Jws<Claims> getParsedClaimsJws(String token) {
+    return Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token);
   }
 }

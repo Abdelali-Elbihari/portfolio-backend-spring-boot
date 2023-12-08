@@ -8,7 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.abdelalielbihari.portfolio.model.AboutDto;
+
+import com.abdelalielbihari.portfolio.dto.AboutDto;
 import com.abdelalielbihari.portfolio.repository.AboutRepository;
 import com.abdelalielbihari.portfolio.service.AboutServiceImpl;
 import com.abdelalielbihari.portfolio.service.ImageService;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -38,7 +38,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @TestPropertySource(locations = "classpath:application.properties")
 class AboutControllerTest {
 
-   private AboutServiceImpl aboutService;
+  private AboutServiceImpl aboutService;
 
   @Mock
   private ImageService imageService;
@@ -94,9 +94,9 @@ class AboutControllerTest {
   @Test
   void testGetAllAbouts() throws Exception {
     // Arrange
-    AboutDto addedAbout1 = aboutService.addAbout(AboutDto.builder().build(),
+    aboutService.addAbout(AboutDto.builder().build(),
         new MockMultipartFile("image1", "test1.jpg", "image/jpeg", new byte[0]));
-    AboutDto addedAbout2 = aboutService.addAbout(AboutDto.builder().build(),
+    aboutService.addAbout(AboutDto.builder().build(),
         new MockMultipartFile("image2", "test2.jpg", "image/jpeg", new byte[0]));
 
     // Perform the request and assert the response
@@ -126,6 +126,7 @@ class AboutControllerTest {
         .andExpect(jsonPath("$.description").value(aboutDto.getDescription()))
         .andExpect(jsonPath("$.imageUrl").value("presignedUrl"));
   }
+
   @Test
   void testUpdateAbout() throws Exception {
     // Arrange
@@ -137,14 +138,16 @@ class AboutControllerTest {
 
     AboutDto existingAbout = aboutService.addAbout(aboutDto, image);
 
-    AboutDto updatedDto = AboutDto.builder().id(existingAbout.getId()).title("Updated Title").description("Updated Description").build();
-    MockMultipartFile updatedImage = new MockMultipartFile("updatedImage", "updatedImage.jpg", "image/jpeg", new byte[0]);
+    AboutDto updatedDto = AboutDto.builder().id(existingAbout.getId()).title("Updated Title")
+        .description("Updated Description").build();
+    MockMultipartFile updatedImage = new MockMultipartFile("updatedImage", "updatedImage.jpg", "image/jpeg",
+        new byte[0]);
 
     when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("updatedMockedImageUrl");
     when(urlCache.getOrGeneratePresignedUrl("updatedMockedImageUrl")).thenReturn("updatedPresignedUrl");
     // Perform the request and assert the response
-    mockMvc.perform(multipart(HttpMethod.PUT,"/api/about/{id}", updatedDto.getId())
-            .file("image",updatedImage.getBytes())
+    mockMvc.perform(multipart(HttpMethod.PUT, "/api/about/{id}", updatedDto.getId())
+            .file("image", updatedImage.getBytes())
             .flashAttr("aboutDto", updatedDto)
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isOk())
@@ -158,15 +161,16 @@ class AboutControllerTest {
   @Test
   void testUpdateAboutNotFound() throws Exception {
     // Arrange
-    AboutDto aboutDto = AboutDto.builder().id("nonexistent").title("Updated Title").description("Updated Description").build();
+    AboutDto aboutDto = AboutDto.builder().id("nonexistent").title("Updated Title").description("Updated Description")
+        .build();
     MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", new byte[0]);
 
     when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
     when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
 
     // Perform the request and assert the response
-    mockMvc.perform(multipart(HttpMethod.PUT,"/api/about/{id}", aboutDto.getId())
-            .file("image",image.getBytes())
+    mockMvc.perform(multipart(HttpMethod.PUT, "/api/about/{id}", aboutDto.getId())
+            .file("image", image.getBytes())
             .flashAttr("aboutDto", aboutDto)
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isNotFound());

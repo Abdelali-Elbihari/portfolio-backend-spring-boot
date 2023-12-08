@@ -1,4 +1,4 @@
-package com.abdelalielbihari.portfolio.model;
+package com.abdelalielbihari.portfolio.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class JwtResponseDTO {
-  private String accessToken;
+public class AuthRequestDto {
 
+  private String username;
+  private String password;
 }

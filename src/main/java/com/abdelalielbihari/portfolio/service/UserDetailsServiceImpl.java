@@ -1,6 +1,6 @@
-package com.abdelalielbihari.portfolio.security;
+package com.abdelalielbihari.portfolio.service;
 
-import com.abdelalielbihari.portfolio.domain.User;
+import com.abdelalielbihari.portfolio.model.User;
 import com.abdelalielbihari.portfolio.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

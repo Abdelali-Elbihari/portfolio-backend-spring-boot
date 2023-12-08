@@ -1,4 +1,4 @@
-package com.abdelalielbihari.portfolio.domain;
+package com.abdelalielbihari.portfolio.model;
 
 import lombok.Builder;
 import lombok.Data;
