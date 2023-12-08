@@ -1,5 +1,5 @@
 # .github/workflows/ci-cd-render.yml
-
+name: CI/CD Build and deploy to Render
 on:
   pull_request:
   push:

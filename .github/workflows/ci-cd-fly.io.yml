@@ -1,6 +1,6 @@
 # .github/workflows/ci-cd-fly.io.yml
 
-name: Java CI/CD with GitHub Actions, Maven and Fly.io
+name: CI/CD Build and deploy to Fly.io
 on:
     pull_request:
     push:
@@ -27,10 +27,8 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: mvn clean package
-      - name: Deploy Spring Boot app to fly.io
-        # Only run this step if the branch is main
-        if: github.ref == 'refs/heads/main'
-        uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
+        if: github.ref == 'refs/heads/main'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
