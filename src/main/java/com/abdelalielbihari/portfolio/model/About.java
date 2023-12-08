@@ -1,11 +1,11 @@
-package com.abdelalielbihari.portfolio.domain;
+package com.abdelalielbihari.portfolio.model;
 
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
+@Document(collection = "abouts")
 @Builder
 @Data
 public class About {

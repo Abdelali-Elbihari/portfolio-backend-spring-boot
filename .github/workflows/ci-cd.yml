@@ -3,7 +3,7 @@
 on:
   pull_request:
   push:
-    branches: [ ]
+  branches: [main, develop]
 
 jobs:
   ci:
@@ -14,6 +14,8 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       S3_BUCKET: ${{ secrets.S3_BUCKET }}
       MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17

@@ -1,6 +1,9 @@
 package com.abdelalielbihari.portfolio.service;
 
 
+import java.io.IOException;
+import java.time.Duration;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,13 +17,12 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.utils.Validate;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AwsImageService implements ImageService {
+public class ImageServiceImpl implements ImageService {
+
+  public static final String IMAGES_FOLDER = "images/";
 
   @Value("${cloud.aws.s3.bucket}")
   public String bucketName;
@@ -46,7 +48,7 @@ public class AwsImageService implements ImageService {
   public String getPresignedImageUrl(String imageUrl) {
     GetObjectRequest getObjectRequest = GetObjectRequest.builder()
         .bucket(bucketName)
-        .key(getKeyFromUrl(imageUrl))
+        .key(IMAGES_FOLDER + getKeyFromUrl(imageUrl))
         .build();
 
     GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
@@ -70,11 +72,11 @@ public class AwsImageService implements ImageService {
   private PutObjectResponse uploadToS3(String fileName, byte[] file) throws IOException {
     return s3Client.putObject(PutObjectRequest.builder()
         .bucket(bucketName)
-        .key("images" + "/" + fileName)
+        .key(IMAGES_FOLDER + fileName)
         .build(), RequestBody.fromBytes(file));
   }
 
   private String getUploadedFileUrl(String fileName) {
-    return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
+    return "https://" + bucketName + ".s3.amazonaws.com/" + IMAGES_FOLDER + fileName;
   }
 }

@@ -1,24 +1,28 @@
 package com.abdelalielbihari.portfolio.service;
 
-import com.abdelalielbihari.portfolio.domain.About;
-import com.abdelalielbihari.portfolio.model.AboutDto;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.nullable;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.abdelalielbihari.portfolio.dto.AboutDto;
+import com.abdelalielbihari.portfolio.model.About;
 import com.abdelalielbihari.portfolio.repository.AboutRepository;
 import com.abdelalielbihari.portfolio.util.AboutMapper;
 import com.abdelalielbihari.portfolio.util.UrlCache;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 
 class AboutServiceImplTest {
 

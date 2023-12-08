@@ -1,11 +1,11 @@
 package com.abdelalielbihari.portfolio.util;
 
 import com.abdelalielbihari.portfolio.service.ImageService;
-import lombok.Getter;
-import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Getter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class UrlCache {
