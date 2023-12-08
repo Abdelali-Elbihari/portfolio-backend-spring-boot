@@ -1,12 +1,13 @@
-# .github/workflows/ci-cd.yml
+# .github/workflows/ci-cd-fly.io.yml
 
+name: Java CI/CD with GitHub Actions, Maven and Fly.io
 on:
-  pull_request:
-  push:
-    branches: [main, develop]
+    pull_request:
+    push:
+      branches: [main, develop]
 
 jobs:
-  ci:
+  deploy:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -17,19 +18,19 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout the repo
+        uses: actions/checkout@v3
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Debug
-        run: mvn -version
-      - name: Test
-        run: mvn clean test
-      - name: Deploy on Render
+      - name: Build with Maven
+        run: mvn clean package
+      - name: Deploy Spring Boot app to fly.io
         # Only run this step if the branch is main
         if: github.ref == 'refs/heads/main'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+              - run: flyctl deploy - remote-only
         env:
-          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: curl "$deploy_url"
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
