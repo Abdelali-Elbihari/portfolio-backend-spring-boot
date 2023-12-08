@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import javax.crypto.SecretKey;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +19,14 @@ public class JwtTokenUtil {
   private String secretKey;
 
   @Value("${jwt.expiration}")
-  private long expirationTime;
+  private String expirationTime;
 
   public String generateToken(String username) {
     return Jwts.builder()
         .setSubject(username)
         .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+        .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(
+            StringUtils.isNotBlank(expirationTime) ? expirationTime : "3600000")))
         .signWith(getKey())
         .compact();
   }
