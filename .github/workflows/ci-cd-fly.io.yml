@@ -27,8 +27,8 @@ jobs:
           distribution: 'temurin'
       - name: Build and Test with Maven
         run: mvn clean package
-      - name: Deploy our Spring Boot app to fly.io
+      - name: Deploy app to fly.io
         uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy - remote-only
+      - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
