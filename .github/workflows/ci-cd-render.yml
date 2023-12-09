@@ -1,12 +1,12 @@
-# .github/workflows/ci-cd.yml
-
+# .github/workflows/ci-cd-render.yml
+name: CI/CD Build and deploy to Render
 on:
   pull_request:
   push:
     branches: [main, develop]
 
 jobs:
-  ci:
+  CI-CD:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

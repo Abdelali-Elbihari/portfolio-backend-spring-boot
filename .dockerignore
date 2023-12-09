@@ -1,0 +1,13 @@
+# flyctl launch added from .gitignore
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+fly.toml
