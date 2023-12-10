@@ -1,7 +1,7 @@
 package com.abdelalielbihari.portfolio.service;
 
 import com.abdelalielbihari.portfolio.dto.AboutDto;
-import com.abdelalielbihari.portfolio.model.About;
+import com.abdelalielbihari.portfolio.domain.About;
 import com.abdelalielbihari.portfolio.repository.AboutRepository;
 import com.abdelalielbihari.portfolio.util.AboutMapper;
 import com.abdelalielbihari.portfolio.util.UrlCache;

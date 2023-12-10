@@ -1,4 +1,4 @@
-package com.abdelalielbihari.portfolio.model;
+package com.abdelalielbihari.portfolio.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Set;

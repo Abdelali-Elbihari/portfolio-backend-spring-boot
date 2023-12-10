@@ -1,6 +1,6 @@
 package com.abdelalielbihari.portfolio.repository;
 
-import com.abdelalielbihari.portfolio.model.About;
+import com.abdelalielbihari.portfolio.domain.About;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
