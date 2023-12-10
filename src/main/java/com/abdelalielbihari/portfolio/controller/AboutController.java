@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,10 +19,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,8 +54,8 @@ public class AboutController {
       security = {@SecurityRequirement(name = "JWT Bearer Key")})
   @PostMapping(consumes = {"multipart/form-data"})
   public ResponseEntity<AboutDto> addAbout(
-      @ParameterObject @ModelAttribute("aboutDto") @Valid AboutDto aboutDto,
-      @ParameterObject @RequestParam("image") MultipartFile image)
+      @ModelAttribute("aboutDto") @Valid AboutDto aboutDto,
+      @RequestParam("image") MultipartFile image)
       throws IOException {
 
     AboutDto savedAbout = aboutService.addAbout(aboutDto, image);
@@ -74,8 +71,8 @@ public class AboutController {
       consumes = {"multipart/form-data"})
   public ResponseEntity<AboutDto> updateAbout(
       @PathVariable("id") String id,
-      @ParameterObject @ModelAttribute("aboutDto") @Valid AboutDto aboutDto,
-      @ParameterObject @RequestParam("image") @Valid MultipartFile image)
+      @ModelAttribute("aboutDto") @Valid AboutDto aboutDto,
+      @RequestParam("image") @Valid MultipartFile image)
       throws IOException {
     Optional<AboutDto> about = aboutService.updateAbout(id, aboutDto, image);
     return about
