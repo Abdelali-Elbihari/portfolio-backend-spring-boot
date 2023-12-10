@@ -7,11 +7,11 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.abdelalielbihari.portfolio.config.SecurityConfig;
+import com.abdelalielbihari.portfolio.security.SecurityConfig;
 import com.abdelalielbihari.portfolio.controller.AboutController;
 import com.abdelalielbihari.portfolio.security.JwtAuthenticationFilter;
 import com.abdelalielbihari.portfolio.service.AboutService;
-import com.abdelalielbihari.portfolio.util.JwtTokenUtil;
+import com.abdelalielbihari.portfolio.security.JwtTokenProvider;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,13 +44,13 @@ public class SecurityConfigTest {
 
   @BeforeEach
   public void setUp() {
-    JwtTokenUtil jwtTokenUtil = mock(JwtTokenUtil.class);
+    JwtTokenProvider jwtTokenProvider = mock(JwtTokenProvider.class);
     userDetailService = mock(UserDetailsService.class);
-    JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenUtil, userDetailService);
+    JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider, userDetailService);
 
-    when(jwtTokenUtil.extractToken(any())).thenReturn("token");
-    when(jwtTokenUtil.validateToken("token")).thenReturn(true);
-    when(jwtTokenUtil.getUsernameFromToken("token")).thenReturn("user");
+    when(jwtTokenProvider.extractToken(any())).thenReturn("token");
+    when(jwtTokenProvider.validateToken("token")).thenReturn(true);
+    when(jwtTokenProvider.getUsernameFromToken("token")).thenReturn("user");
     mockMvc = MockMvcBuilders
         .standaloneSetup(new AboutController(aboutService))
         .apply(springSecurity(filterChainProxy))

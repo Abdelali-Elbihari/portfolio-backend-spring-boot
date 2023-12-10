@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.abdelalielbihari.portfolio.dto.AuthRequestDto;
-import com.abdelalielbihari.portfolio.util.JwtTokenUtil;
+import com.abdelalielbihari.portfolio.security.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,13 +31,13 @@ class AuthControllerTest {
   private AuthenticationManager authenticationManager;
 
   @Mock
-  private JwtTokenUtil jwtTokenUtil;
+  private JwtTokenProvider jwtTokenProvider;
 
   private MockMvc mockMvc;
 
   @BeforeEach
   public void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(authenticationManager, jwtTokenUtil)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(authenticationManager, jwtTokenProvider)).build();
   }
 
   @Test
@@ -53,7 +53,7 @@ class AuthControllerTest {
 
     when(authenticationManager.authenticate(any()))
         .thenReturn(mockedAuthenticationToken);
-    when(jwtTokenUtil.generateToken(authRequestDto.getUsername())).thenReturn(fakeToken);
+    when(jwtTokenProvider.generateToken(authRequestDto.getUsername())).thenReturn(fakeToken);
 
     // Act
     ResultActions resultActions = mockMvc.perform(post("/auth")
@@ -61,7 +61,7 @@ class AuthControllerTest {
         .content(asJsonString(authRequestDto)));
 
     // Assert
-    resultActions.andExpect(status().isOk())
+    resultActions.andExpect(status().isCreated())
         .andExpect(jsonPath("$.accessToken").value(fakeToken));
   }
 
