@@ -1,6 +1,6 @@
 package com.abdelalielbihari.portfolio.controller;
 
-import com.abdelalielbihari.portfolio.model.UserDto;
+import com.abdelalielbihari.portfolio.dto.UserDto;
 import com.abdelalielbihari.portfolio.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

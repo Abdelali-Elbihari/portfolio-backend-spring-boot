@@ -1,7 +1,7 @@
 package com.abdelalielbihari.portfolio.controller;
 
-import com.abdelalielbihari.portfolio.model.AuthRequestDto;
-import com.abdelalielbihari.portfolio.model.JwtResponseDTO;
+import com.abdelalielbihari.portfolio.dto.AuthRequestDto;
+import com.abdelalielbihari.portfolio.dto.JwtResponseDTO;
 import com.abdelalielbihari.portfolio.security.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

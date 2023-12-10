@@ -1,6 +1,6 @@
 package com.abdelalielbihari.portfolio.service;
 
-import com.abdelalielbihari.portfolio.model.AboutDto;
+import com.abdelalielbihari.portfolio.dto.AboutDto;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;

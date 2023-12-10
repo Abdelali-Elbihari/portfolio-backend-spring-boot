@@ -1,6 +1,6 @@
 package com.abdelalielbihari.portfolio.util;
 
-import com.abdelalielbihari.portfolio.model.AboutDto;
+import com.abdelalielbihari.portfolio.dto.AboutDto;
 import com.abdelalielbihari.portfolio.domain.About;
 import java.util.List;
 import org.mapstruct.Mapper;
