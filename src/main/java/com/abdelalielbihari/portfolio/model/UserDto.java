@@ -1,4 +1,4 @@
-package com.abdelalielbihari.portfolio.dto;
+package com.abdelalielbihari.portfolio.model;
 
 import java.util.Set;
 import lombok.Builder;

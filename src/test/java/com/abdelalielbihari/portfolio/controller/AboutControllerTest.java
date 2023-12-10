@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.abdelalielbihari.portfolio.dto.AboutDto;
+import com.abdelalielbihari.portfolio.model.AboutDto;
 import com.abdelalielbihari.portfolio.repository.AboutRepository;
 import com.abdelalielbihari.portfolio.service.AboutServiceImpl;
 import com.abdelalielbihari.portfolio.service.ImageService;

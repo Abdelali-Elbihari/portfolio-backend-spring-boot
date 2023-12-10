@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.abdelalielbihari.portfolio.dto.AuthRequestDto;
+import com.abdelalielbihari.portfolio.model.AuthRequestDto;
 import com.abdelalielbihari.portfolio.security.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;

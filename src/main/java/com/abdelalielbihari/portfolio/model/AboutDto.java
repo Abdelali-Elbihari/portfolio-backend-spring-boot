@@ -1,4 +1,4 @@
-package com.abdelalielbihari.portfolio.dto;
+package com.abdelalielbihari.portfolio.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

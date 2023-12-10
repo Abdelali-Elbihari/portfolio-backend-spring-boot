@@ -1,10 +1,8 @@
 package com.abdelalielbihari.portfolio.security;
 
-import com.abdelalielbihari.portfolio.model.User;
-import com.abdelalielbihari.portfolio.repository.UserRepository;
+import com.abdelalielbihari.portfolio.domain.User;
 import com.abdelalielbihari.portfolio.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.config.annotation.authentication.configurers.provisioning.UserDetailsManagerConfigurer.UserDetailsBuilder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
