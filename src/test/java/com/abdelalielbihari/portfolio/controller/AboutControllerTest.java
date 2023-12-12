@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.abdelalielbihari.portfolio.domain.About;
 import com.abdelalielbihari.portfolio.dto.AboutDto;
 import com.abdelalielbihari.portfolio.repository.AboutRepository;
 import com.abdelalielbihari.portfolio.service.AboutServiceImpl;
@@ -17,15 +18,14 @@ import com.abdelalielbihari.portfolio.util.AboutMapper;
 import com.abdelalielbihari.portfolio.util.UrlCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -33,17 +33,16 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
 @Testcontainers
-@TestPropertySource(locations = "classpath:application-test.properties")
+@SpringBootTest
 class AboutControllerTest {
 
   private AboutServiceImpl aboutService;
 
-  @Mock
+  @MockBean
   private ImageService imageService;
 
-  @Mock
+  @MockBean
   private UrlCache urlCache;
 
   @Autowired
@@ -65,8 +64,8 @@ class AboutControllerTest {
   @BeforeEach
   void setUp() {
     openMocks(this);
-    aboutService = new AboutServiceImpl(aboutRepository, aboutMapper, imageService, urlCache);
-    mockMvc = MockMvcBuilders.standaloneSetup(new AboutController(aboutService)).build();
+    aboutService = new AboutServiceImpl(aboutRepository, imageService, urlCache);
+    mockMvc = MockMvcBuilders.standaloneSetup(new AboutController(aboutService, aboutMapper)).build();
   }
 
   @Test
@@ -79,7 +78,7 @@ class AboutControllerTest {
     when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
     when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
 
-    AboutDto savedAbout = aboutService.addAbout(aboutDto, image);
+    About savedAbout = aboutService.addAbout(aboutMapper.toAbout(aboutDto), image);
 
     // Perform the request and assert the response
     mockMvc.perform(MockMvcRequestBuilders.get("/api/about/{id}", savedAbout.getId()))
@@ -94,9 +93,9 @@ class AboutControllerTest {
   @Test
   void testGetAllAbouts() throws Exception {
     // Arrange
-    aboutService.addAbout(AboutDto.builder().build(),
+    aboutService.addAbout(About.builder().build(),
         new MockMultipartFile("image1", "test1.jpg", "image/jpeg", new byte[0]));
-    aboutService.addAbout(AboutDto.builder().build(),
+    aboutService.addAbout(About.builder().build(),
         new MockMultipartFile("image2", "test2.jpg", "image/jpeg", new byte[0]));
 
     // Perform the request and assert the response
@@ -130,13 +129,13 @@ class AboutControllerTest {
   @Test
   void testUpdateAbout() throws Exception {
     // Arrange
-    AboutDto aboutDto = AboutDto.builder().build();
+    About about = About.builder().build();
     MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", new byte[0]);
 
     when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
     when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
 
-    AboutDto existingAbout = aboutService.addAbout(aboutDto, image);
+    About existingAbout = aboutService.addAbout(about, image);
 
     AboutDto updatedDto = AboutDto.builder().id(existingAbout.getId()).title("Updated Title")
         .description("Updated Description").build();
@@ -179,7 +178,7 @@ class AboutControllerTest {
   @Test
   void testDeleteAbout() throws Exception {
     // Arrange
-    AboutDto savedAbout = aboutService.addAbout(AboutDto.builder().build(),
+    About savedAbout = aboutService.addAbout(About.builder().build(),
         new MockMultipartFile("image1", "test1.jpg", "image/jpeg", new byte[0]));
 
     when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");

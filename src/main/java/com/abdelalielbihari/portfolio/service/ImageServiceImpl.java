@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -18,11 +19,11 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.utils.Validate;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
-  public static final String IMAGES_FOLDER = "images/";
+  private static final String IMAGES_FOLDER = "images/";
 
   @Value("${cloud.aws.s3.bucket}")
   public String bucketName;

@@ -3,13 +3,14 @@ package com.abdelalielbihari.portfolio.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class AboutDto {
+public class AboutDto extends BaseDto {
 
   private String id;
   private String title;

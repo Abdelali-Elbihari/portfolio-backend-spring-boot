@@ -1,4 +1,4 @@
-package com.abdelalielbihari.portfolio.configuration;
+package com.abdelalielbihari.portfolio.security;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -7,40 +7,39 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.abdelalielbihari.portfolio.security.SecurityConfig;
 import com.abdelalielbihari.portfolio.controller.AboutController;
-import com.abdelalielbihari.portfolio.security.JwtAuthenticationFilter;
 import com.abdelalielbihari.portfolio.service.AboutService;
-import com.abdelalielbihari.portfolio.security.JwtTokenProvider;
+import com.abdelalielbihari.portfolio.util.AboutMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.FilterChainProxy;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @SpringBootTest
-@TestPropertySource(locations = "classpath:application-test.properties")
-@Import(SecurityConfig.class)
-public class SecurityConfigTest {
+class SecurityConfigTest {
 
   private MockMvc mockMvc;
-  @Mock
+  @MockBean
   private AboutService aboutService;
 
   @Autowired
   FilterChainProxy filterChainProxy;
 
   private UserDetailsService userDetailService;
+
+  @MockBean
+  private AboutMapper aboutMapper ;
 
   @BeforeEach
   public void setUp() {
@@ -52,7 +51,7 @@ public class SecurityConfigTest {
     when(jwtTokenProvider.validateToken("token")).thenReturn(true);
     when(jwtTokenProvider.getUsernameFromToken("token")).thenReturn("user");
     mockMvc = MockMvcBuilders
-        .standaloneSetup(new AboutController(aboutService))
+        .standaloneSetup(new AboutController(aboutService, aboutMapper))
         .apply(springSecurity(filterChainProxy))
         .addFilters(jwtAuthenticationFilter)
         .build();

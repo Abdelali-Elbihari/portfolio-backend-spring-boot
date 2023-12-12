@@ -8,48 +8,41 @@ import com.abdelalielbihari.portfolio.util.UrlCache;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 @Component
+@RequiredArgsConstructor
 public class AboutServiceImpl implements AboutService {
 
   private final AboutRepository aboutRepository;
-  private final AboutMapper aboutMapper;
   private final ImageService imageService;
   private final UrlCache urlCache;
 
-  public AboutServiceImpl(AboutRepository aboutRepository, AboutMapper aboutMapper, ImageService imageService,
-      UrlCache urlCache) {
-    this.aboutRepository = aboutRepository;
-    this.aboutMapper = aboutMapper;
-    this.imageService = imageService;
-    this.urlCache = urlCache;
-  }
 
   @Override
-  public Optional<AboutDto> getOneAbout(String id) {
+  public Optional<About> getAbout(String id) {
     return aboutRepository.findById(id).map(about -> {
-      AboutDto aboutDto = aboutMapper.toAboutDto(about);
-      aboutDto.setImageUrl(urlCache.getOrGeneratePresignedUrl(aboutDto.getImageUrl()));
-      return aboutDto;
+      about.setImageUrl(urlCache.getOrGeneratePresignedUrl(about.getImageUrl()));
+      return about;
     });
   }
 
   @Override
-  public List<AboutDto> getAllAbouts() {
-    List<AboutDto> aboutDtoList = aboutMapper.toAboutDtoList(aboutRepository.findAll());
-    aboutDtoList.forEach(aboutDto -> aboutDto.setImageUrl(urlCache.getOrGeneratePresignedUrl(aboutDto.getImageUrl())));
-    return aboutDtoList;
+  public List<About> getAllAbouts() {
+    List<About> aboutList = aboutRepository.findAll();
+    aboutList.forEach(about -> about.setImageUrl(urlCache.getOrGeneratePresignedUrl(about.getImageUrl())));
+    return aboutList;
   }
 
   @Override
-  public AboutDto addAbout(AboutDto aboutDto, MultipartFile image) throws IOException {
-    return handleSaveWitImage(image, aboutMapper.toAbout(aboutDto));
+  public About addAbout(About about, MultipartFile image) throws IOException {
+    return handleSaveWitImage(image, about);
   }
 
   @Override
-  public Optional<AboutDto> updateAbout(String id, AboutDto aboutDto, MultipartFile image) throws IOException {
+  public Optional<About> updateAbout(String id, About aboutDto, MultipartFile image) throws IOException {
     Optional<About> newAbout = aboutRepository.findById(id);
 
     if (newAbout.isPresent()) {
@@ -62,17 +55,17 @@ public class AboutServiceImpl implements AboutService {
     return Optional.empty();
   }
 
-  private AboutDto handleSaveWitImage(MultipartFile image, About updatedAbout) throws IOException {
+  private About handleSaveWitImage(MultipartFile image, About about) throws IOException {
     // todo replace image instead
     String imageUrl = imageService.uploadImage(image);
-    updatedAbout.setImageUrl(imageUrl);
+    about.setImageUrl(imageUrl);
 
     //Save About entity with normal url
-    AboutDto newAboutDto = aboutMapper.toAboutDto(aboutRepository.save(updatedAbout));
+    About newAbout = aboutRepository.save(about);
 
     //get Or Generate Presigned Url
-    newAboutDto.setImageUrl(urlCache.getOrGeneratePresignedUrl(newAboutDto.getImageUrl()));
-    return newAboutDto;
+    newAbout.setImageUrl(urlCache.getOrGeneratePresignedUrl(newAbout.getImageUrl()));
+    return newAbout;
   }
 
   @Override

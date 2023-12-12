@@ -1,7 +1,9 @@
 package com.abdelalielbihari.portfolio.controller;
 
+import com.abdelalielbihari.portfolio.domain.About;
 import com.abdelalielbihari.portfolio.dto.AboutDto;
 import com.abdelalielbihari.portfolio.service.AboutService;
+import com.abdelalielbihari.portfolio.util.AboutMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -31,14 +33,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class AboutController {
 
   private final AboutService aboutService;
+  private final AboutMapper aboutMapper;
 
   @Operation(summary = "Get details of an about entry by ID",
       security = {@SecurityRequirement(name = "JWT Bearer Key")})
   @GetMapping("/{id}")
   public ResponseEntity<AboutDto> getOneAbout(@PathVariable String id) {
-    Optional<AboutDto> about = aboutService.getOneAbout(id);
+    Optional<About> about = aboutService.getAbout(id);
     return about
-        .map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+        .map(value -> new ResponseEntity<>(aboutMapper.toAboutDto(value), HttpStatus.OK))
         .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
@@ -46,7 +49,7 @@ public class AboutController {
       security = {@SecurityRequirement(name = "JWT Bearer Key")})
   @GetMapping
   public List<AboutDto> getAllAbouts() {
-    return aboutService.getAllAbouts();
+    return aboutMapper.toAboutDtoList(aboutService.getAllAbouts());
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -58,9 +61,9 @@ public class AboutController {
       @RequestParam("image") MultipartFile image)
       throws IOException {
 
-    AboutDto savedAbout = aboutService.addAbout(aboutDto, image);
+    About savedAbout = aboutService.addAbout(aboutMapper.toAbout(aboutDto), image);
 
-    return new ResponseEntity<>(savedAbout, HttpStatus.CREATED);
+    return new ResponseEntity<>(aboutMapper.toAboutDto(savedAbout), HttpStatus.CREATED);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -74,9 +77,9 @@ public class AboutController {
       @ModelAttribute("aboutDto") @Valid AboutDto aboutDto,
       @RequestParam("image") @Valid MultipartFile image)
       throws IOException {
-    Optional<AboutDto> about = aboutService.updateAbout(id, aboutDto, image);
+    Optional<About> about = aboutService.updateAbout(id, aboutMapper.toAbout(aboutDto), image);
     return about
-        .map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+        .map(value -> new ResponseEntity<>(aboutMapper.toAboutDto(value), HttpStatus.OK))
         .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
