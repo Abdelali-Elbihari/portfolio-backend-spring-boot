@@ -57,7 +57,7 @@ public class SkillServiceImpl implements SkillService {
 
     Skill newSkill = skillRepository.save(skill);
 
-    newSkill.setIcon(urlCache.getOrGeneratePresignedUrl(newSkill.getIcon()));
+    newSkill.setIcon(urlCache.getOrGeneratePresignedImgUrl(newSkill.getIcon()));
     return newSkill;
   }
 

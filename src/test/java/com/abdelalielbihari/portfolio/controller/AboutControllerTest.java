@@ -1,6 +1,7 @@
 package com.abdelalielbihari.portfolio.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -16,11 +17,15 @@ import com.abdelalielbihari.portfolio.service.AboutServiceImpl;
 import com.abdelalielbihari.portfolio.service.ImageService;
 import com.abdelalielbihari.portfolio.util.AboutMapper;
 import com.abdelalielbihari.portfolio.util.UrlCache;
+import com.abdelalielbihari.portfolio.util.UrlCache.CachedUrl;
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -37,24 +42,26 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 class AboutControllerTest {
 
-  private AboutServiceImpl aboutService;
-
-  @MockBean
-  private ImageService imageService;
-
-  @MockBean
-  private UrlCache urlCache;
-
+  @Autowired
+  private AboutRepository aboutRepository;
   @Autowired
   private AboutMapper aboutMapper;
+  private AboutServiceImpl aboutService;
+
+  @Mock
+  private ImageService imageService;
+
+  @Mock
+  private RedisTemplate<String, CachedUrl> redisTemplate;
 
   private MockMvc mockMvc;
 
   @Container
   private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:5.0.12");
 
-  @Autowired
-  private AboutRepository aboutRepository;
+  AboutControllerTest() {
+  }
+
 
   @DynamicPropertySource
   static void setMongoProperties(DynamicPropertyRegistry registry) {
@@ -62,9 +69,13 @@ class AboutControllerTest {
   }
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     openMocks(this);
-    aboutService = new AboutServiceImpl(aboutRepository, imageService, urlCache);
+    when(redisTemplate.opsForValue()).thenReturn(mock(ValueOperations.class));
+    when(redisTemplate.opsForValue().get(any())).thenReturn(new CachedUrl("presignedUrl"));
+    when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
+    when(imageService.getPresignedImageUrl(any())).thenReturn("presignedUrl");
+    aboutService = new AboutServiceImpl(aboutRepository, imageService, new UrlCache(redisTemplate, imageService));
     mockMvc = MockMvcBuilders.standaloneSetup(new AboutController(aboutService, aboutMapper)).build();
   }
 
@@ -75,9 +86,6 @@ class AboutControllerTest {
     AboutDto aboutDto = AboutDto.builder().build();
     MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", new byte[0]);
 
-    when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
-    when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
-
     About savedAbout = aboutService.addAbout(aboutMapper.toAbout(aboutDto), image);
 
     // Perform the request and assert the response
@@ -87,7 +95,7 @@ class AboutControllerTest {
         .andExpect(jsonPath("$.id").value(savedAbout.getId()))
         .andExpect(jsonPath("$.title").value(savedAbout.getTitle()))
         .andExpect(jsonPath("$.description").value(savedAbout.getDescription()))
-        .andExpect(jsonPath("$.imageUrl").value(savedAbout.getImageUrl()));
+        .andExpect(jsonPath("$.imgUrl").value(savedAbout.getImgUrl()));
   }
 
   @Test
@@ -110,8 +118,6 @@ class AboutControllerTest {
     // Arrange
     AboutDto aboutDto = AboutDto.builder().title("title1").description("desc1").build();
     MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", new byte[0]);
-    when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
-    when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
 
     // Perform the request and assert the response
     mockMvc.perform(multipart("/api/about")
@@ -123,7 +129,7 @@ class AboutControllerTest {
         .andExpect(jsonPath("$.id").isNotEmpty())
         .andExpect(jsonPath("$.title").value(aboutDto.getTitle()))
         .andExpect(jsonPath("$.description").value(aboutDto.getDescription()))
-        .andExpect(jsonPath("$.imageUrl").value("presignedUrl"));
+        .andExpect(jsonPath("$.imgUrl").value("presignedUrl"));
   }
 
   @Test
@@ -132,9 +138,6 @@ class AboutControllerTest {
     About about = About.builder().build();
     MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", new byte[0]);
 
-    when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
-    when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
-
     About existingAbout = aboutService.addAbout(about, image);
 
     AboutDto updatedDto = AboutDto.builder().id(existingAbout.getId()).title("Updated Title")
@@ -142,8 +145,6 @@ class AboutControllerTest {
     MockMultipartFile updatedImage = new MockMultipartFile("updatedImage", "updatedImage.jpg", "image/jpeg",
         new byte[0]);
 
-    when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("updatedMockedImageUrl");
-    when(urlCache.getOrGeneratePresignedUrl("updatedMockedImageUrl")).thenReturn("updatedPresignedUrl");
     // Perform the request and assert the response
     mockMvc.perform(multipart(HttpMethod.PUT, "/api/about/{id}", updatedDto.getId())
             .file("image", updatedImage.getBytes())
@@ -154,7 +155,7 @@ class AboutControllerTest {
         .andExpect(jsonPath("$.id").value(updatedDto.getId()))
         .andExpect(jsonPath("$.title").value(updatedDto.getTitle()))
         .andExpect(jsonPath("$.description").value(updatedDto.getDescription()))
-        .andExpect(jsonPath("$.imageUrl").value("updatedPresignedUrl"));
+        .andExpect(jsonPath("$.imgUrl").value("presignedUrl"));
   }
 
   @Test
@@ -163,9 +164,6 @@ class AboutControllerTest {
     AboutDto aboutDto = AboutDto.builder().id("nonexistent").title("Updated Title").description("Updated Description")
         .build();
     MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", new byte[0]);
-
-    when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
-    when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
 
     // Perform the request and assert the response
     mockMvc.perform(multipart(HttpMethod.PUT, "/api/about/{id}", aboutDto.getId())
@@ -180,9 +178,6 @@ class AboutControllerTest {
     // Arrange
     About savedAbout = aboutService.addAbout(About.builder().build(),
         new MockMultipartFile("image1", "test1.jpg", "image/jpeg", new byte[0]));
-
-    when(urlCache.getOrGeneratePresignedUrl("mockedImageUrl")).thenReturn("presignedUrl");
-    when(imageService.uploadImage(any(MockMultipartFile.class))).thenReturn("mockedImageUrl");
 
     // Perform the request and assert the response
     mockMvc.perform(delete("/api/about/{id}", savedAbout.getId()))

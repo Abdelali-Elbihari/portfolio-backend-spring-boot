@@ -68,7 +68,7 @@ class SkillServiceTest {
     MultipartFile icon = mock(MultipartFile.class);
     String iconUrl = "uploadedIconUrl";
     when(imageService.uploadImage(icon)).thenReturn(iconUrl);
-    when(urlCache.getOrGeneratePresignedUrl(iconUrl)).thenReturn("presignedUrl");
+    when(urlCache.getOrGeneratePresignedImgUrl(iconUrl)).thenReturn("presignedUrl");
     when(skillRepository.save(skill)).thenReturn(skill);
     Skill savedSkill = skillService.addSkill(icon, skill);
 
@@ -85,7 +85,7 @@ class SkillServiceTest {
     MultipartFile icon = mock(MultipartFile.class);
     String iconUrl = "uploadedIconUrl";
     when(imageService.uploadImage(icon)).thenReturn(iconUrl);
-    when(urlCache.getOrGeneratePresignedUrl(iconUrl)).thenReturn("presignedUrl");
+    when(urlCache.getOrGeneratePresignedImgUrl(iconUrl)).thenReturn("presignedUrl");
     when(skillRepository.findById(id)).thenReturn(Optional.of(existing));
     when(skillRepository.save(any(Skill.class))).thenReturn(expected);
 
