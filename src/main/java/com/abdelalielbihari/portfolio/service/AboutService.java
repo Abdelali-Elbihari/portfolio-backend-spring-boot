@@ -1,6 +1,6 @@
 package com.abdelalielbihari.portfolio.service;
 
-import com.abdelalielbihari.portfolio.dto.AboutDto;
+import com.abdelalielbihari.portfolio.domain.About;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -10,13 +10,13 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public interface AboutService {
 
-  Optional<AboutDto> getOneAbout(String id);
+  Optional<About> getAbout(String id);
 
-  List<AboutDto> getAllAbouts();
+  List<About> getAllAbouts();
 
-  AboutDto addAbout(AboutDto about, MultipartFile image) throws IOException;
+  About addAbout(About about, MultipartFile image) throws IOException;
 
-  Optional<AboutDto> updateAbout(String id, AboutDto aboutDto, MultipartFile image) throws IOException;
+  Optional<About> updateAbout(String id, About about, MultipartFile image) throws IOException;
 
   void deleteAbout(String id);
 }

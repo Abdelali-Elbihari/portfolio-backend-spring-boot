@@ -7,43 +7,48 @@ import static org.mockito.Mockito.nullable;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
-import com.abdelalielbihari.portfolio.dto.AboutDto;
 import com.abdelalielbihari.portfolio.domain.About;
 import com.abdelalielbihari.portfolio.repository.AboutRepository;
-import com.abdelalielbihari.portfolio.util.AboutMapper;
 import com.abdelalielbihari.portfolio.util.UrlCache;
+import com.abdelalielbihari.portfolio.util.UrlCache.CachedUrl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.core.ReactiveRedisOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.web.multipart.MultipartFile;
 
-class AboutServiceImplTest {
+@SpringBootTest
+class AboutServiceTest {
 
-  @Mock
+  @MockBean
   private AboutRepository aboutRepository;
-
-  @Mock
-  private AboutMapper aboutMapper;
 
   @Mock
   private ImageService imageService;
 
-  @Mock
-  private UrlCache urlCache;
+  private AboutService aboutService;
 
-  @InjectMocks
-  private AboutServiceImpl aboutService;
+  @Mock
+  private RedisTemplate<String, CachedUrl> redisTemplate;
 
   @BeforeEach
-  void setUp() {
-    MockitoAnnotations.openMocks(this);
+  void setup() throws IOException {
+    openMocks(this);
+    when(redisTemplate.opsForValue()).thenReturn(mock(ValueOperations.class));
+    when(redisTemplate.opsForValue().get(any())).thenReturn(new CachedUrl("presignedUrl"));
+    when(imageService.uploadImage(any(MultipartFile.class))).thenReturn("uploadedImageUrl");
+    aboutService = new AboutServiceImpl(aboutRepository, imageService, new UrlCache(redisTemplate, imageService));
   }
 
   @Test
@@ -51,18 +56,15 @@ class AboutServiceImplTest {
     // Arrange
     String aboutId = "1";
     About about = About.builder().id(aboutId).build();
-    AboutDto aboutDto = AboutDto.builder().id(aboutId).build();
 
     when(aboutRepository.findById(aboutId)).thenReturn(Optional.of(about));
-    when(aboutMapper.toAboutDto(about)).thenReturn(aboutDto);
-    when(urlCache.getOrGeneratePresignedUrl(nullable(String.class))).thenReturn("presignedUrl");
 
     // Act
-    Optional<AboutDto> result = aboutService.getOneAbout(aboutId);
+    Optional<About> result = aboutService.getAbout(aboutId);
 
     // Assert
-    assertEquals(aboutDto, result.orElseThrow());
-    verify(urlCache, times(1)).getOrGeneratePresignedUrl(nullable(String.class));
+    assertEquals(about, result.orElseThrow());
+    verify(redisTemplate, times(3)).opsForValue();
   }
 
   @Test
@@ -73,62 +75,48 @@ class AboutServiceImplTest {
     List<About> aboutList = Arrays.asList(about1, about2);
 
     when(aboutRepository.findAll()).thenReturn(aboutList);
-    when(aboutMapper.toAboutDtoList(aboutList)).thenReturn(Arrays.asList(
-        AboutDto.builder().id("1").build(),
-        AboutDto.builder().id("2").build()
-    ));
-    when(urlCache.getOrGeneratePresignedUrl(nullable(String.class))).thenReturn("presignedUrl");
 
     // Act
-    List<AboutDto> result = aboutService.getAllAbouts();
+    List<About> result = aboutService.getAllAbouts();
 
     // Assert
     assertEquals(2, result.size());
-    verify(urlCache, times(2)).getOrGeneratePresignedUrl(nullable(String.class));
+    verify(redisTemplate, times(5)).opsForValue();
   }
 
   @Test
   void testAddAbout() throws IOException {
     // Arrange
-    AboutDto aboutDto = AboutDto.builder().build();
     MultipartFile image = mock(MultipartFile.class);
     String imageUrl = "uploadedImageUrl";
     About about = About.builder().build();
 
     when(imageService.uploadImage(image)).thenReturn(imageUrl);
-    when(urlCache.getOrGeneratePresignedUrl(imageUrl)).thenReturn("presignedUrl");
-    when(aboutMapper.toAbout(aboutDto)).thenReturn(about);
     when(aboutRepository.save(about)).thenReturn(about);
-    when(aboutMapper.toAboutDto(about)).thenReturn(aboutDto);
 
     // Act
-    AboutDto result = aboutService.addAbout(aboutDto, image);
+    About result = aboutService.addAbout(about, image);
 
     // Assert
-    assertEquals(aboutDto, result);
-    verify(urlCache, times(1)).getOrGeneratePresignedUrl(nullable(String.class));
+    assertEquals(about, result);
+    verify(redisTemplate, times(3)).opsForValue();
   }
 
   @Test
   void testUpdateAbout() throws IOException {
     // Arrange
     String aboutId = "1";
-    AboutDto aboutDto = AboutDto.builder().id(aboutId).build();
     MultipartFile image = mock(MultipartFile.class);
-    String imageUrl = "uploadedImageUrl";
     About existingAbout = About.builder().id(aboutId).build();
 
-    when(imageService.uploadImage(image)).thenReturn(imageUrl);
-    when(urlCache.getOrGeneratePresignedUrl(imageUrl)).thenReturn("presignedUrl");
     when(aboutRepository.findById(aboutId)).thenReturn(Optional.of(existingAbout));
     when(aboutRepository.save(any(About.class))).thenReturn(existingAbout);
-    when(aboutMapper.toAboutDto(existingAbout)).thenReturn(aboutDto);
     // Act
-    Optional<AboutDto> result = aboutService.updateAbout(aboutId, aboutDto, image);
+    Optional<About> result = aboutService.updateAbout(aboutId, existingAbout, image);
 
     // Assert
-    assertEquals(aboutDto, result.orElseThrow());
-    verify(urlCache, times(1)).getOrGeneratePresignedUrl(nullable(String.class));
+    assertEquals(existingAbout, result.orElseThrow());
+    verify(redisTemplate, times(3)).opsForValue();
   }
 
   @Test
@@ -142,7 +130,6 @@ class AboutServiceImplTest {
     aboutService.deleteAbout(aboutId);
 
     // Assert
-    verify(aboutRepository, times(1)).findById(aboutId);
-    verify(aboutRepository, times(1)).delete(any());
+    verify(aboutRepository, times(1)).deleteById(aboutId);
   }
 }

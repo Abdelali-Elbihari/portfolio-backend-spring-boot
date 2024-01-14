@@ -7,10 +7,10 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class AboutDto extends BaseDto {
+public class SkillDto extends BaseDto {
 
   private String id;
-  private String title;
-  private String description;
-  private String imgUrl;
+  private String name;
+  private String bgColor;
+  private String icon;
 }

@@ -8,6 +8,7 @@ on:
 
 jobs:
   Test_and_Deploy:
+    environment: test    # the environment used for secrets
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -17,6 +18,10 @@ jobs:
       MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+      REDIS_SSL_ENABLED: ${{ secrets.REDIS_SSL_ENABLED }}
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3

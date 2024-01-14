@@ -6,10 +6,11 @@ import com.abdelalielbihari.portfolio.repository.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
-@Service
+@Component
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
